@@ -9,7 +9,8 @@
 ║  Deploy:    https://share.streamlit.io  (gratis)                            ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
-
+from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -77,16 +78,16 @@ def sb_select(table: str, query: str = "") -> list:
 #  CARGA DE DATOS (cacheado 5 min)
 # ─────────────────────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=300)
 def cargar_picks_hoy() -> pd.DataFrame:
-    hoy = datetime.now().strftime("%Y-%m-%d")
+    tz = ZoneInfo("America/Mexico_City") 
+    hoy = datetime.now(tz).strftime("%Y-%m-%d")
+    
     datos = sb_select("picks", f"fecha=eq.{hoy}&order=created_at.desc&select=*")
     if not datos:
         return pd.DataFrame()
     df = pd.DataFrame(datos)
     df = df.drop(columns=["features_json"], errors="ignore")
     return df
-
 
 @st.cache_data(ttl=300)
 def cargar_historial(dias: int = 30) -> pd.DataFrame:
